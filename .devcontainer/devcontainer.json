@@ -1,0 +1,20 @@
+{
+  "name": "Astro",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {}
+  },
+  // Astro's default dev port
+  "forwardPorts": [4321],
+  
+  // Suggested: Automatically install dependencies when the container starts
+  "postCreateCommand": "npm install",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "astro-build.astro-vscode"
+      ]
+    }
+  }
+}
