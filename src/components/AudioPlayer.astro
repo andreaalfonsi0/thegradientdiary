@@ -1,0 +1,523 @@
+<div class="audio-player-pro" id="player-container">
+  <!-- Header -->
+  <div class="player-header">
+    <div class="track-meta" id="ui-track-meta">Part 1 of 3</div>
+    <div class="track-title" id="ui-track-title">Loading Metadata...</div>
+  </div>
+
+  <!-- Progress Bar Row -->
+  <div class="progress-row">
+    <span class="time-label" id="ui-current-time">0:00</span>
+    <div class="progress-track-wrapper" id="ui-progress-container">
+      <!-- Segments injected by JS -->
+    </div>
+    <span class="time-label" id="ui-remaining-time">-0:00</span>
+  </div>
+
+  <!-- Controls Row -->
+  <div class="controls-row">
+    <!-- Volume -->
+    <div class="left-controls">
+      <div class="volume-wrapper">
+        <button class="icon-btn" id="volume-icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5L6 9H2v6h4l5 4V5zM15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+        </button>
+        <div class="volume-slider-popover">
+          <input type="range" class="vertical-slider" id="volume-slider" min="0" max="1" step="0.01" value="0.8">
+        </div>
+      </div>
+    </div>
+
+    <!-- Playback -->
+    <div class="center-controls">
+      <button class="icon-btn" id="prev-btn" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+      
+      <button class="icon-btn play-pause-btn" id="play-pause-btn" disabled>
+        <svg id="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <svg id="icon-pause" class="hidden" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+      </button>
+
+      <button class="icon-btn" id="next-btn" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19" stroke="currentColor" stroke-width="2"/></svg>
+      </button>
+    </div>
+
+    <!-- Options -->
+    <div class="right-controls" style="justify-content: flex-end;">
+      <div class="options-wrapper">
+        <button class="icon-btn" id="options-toggle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+        
+        <div class="options-menu" id="options-menu">
+          <div id="main-menu-view">
+            <div class="menu-item" id="speed-menu-trigger">
+              <span>Speed</span>
+              <span id="ui-current-speed" style="color: var(--accent-color)">1x</span>
+            </div>
+            <div class="menu-item" id="save-btn">
+              <span>Save Offline</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            </div>
+          </div>
+
+          <!-- Speed Submenu -->
+          <div class="speed-overlay" id="speed-overlay">
+            <div class="back-btn" id="speed-back">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg> Back
+            </div>
+            <div class="speed-slider-container">
+              <span style="font-size: 0.75rem; color: var(--text-muted)">Playback Speed</span>
+              <input type="range" id="speed-slider" min="0.5" max="2" step="0.25" value="1">
+              <div style="display:flex; justify-content: space-between; font-size: 0.65rem; color: var(--text-muted)">
+                <span>0.5x</span><span>1.0x</span><span>2.0x</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <audio id="core-audio" class="hidden"></audio>
+</div>
+
+
+
+<style is:global>
+  /* Needs to remove is:global but before needs a way to add elements to html dinamically with this style */
+  :root {
+    --font-ui: "Inter", system-ui, -apple-system, sans-serif;
+    --text-main: rgba(0, 0, 0, 0.88);
+    --text-muted: rgba(0, 0, 0, 0.56);
+    --border-color: rgba(0, 0, 0, 0.08);
+    --accent-color: #0366d6;
+    --bg-card: #ffffff;
+    --bg-hover: rgba(0, 0, 0, 0.04);
+    --player-width: 75ch;
+  }
+
+  /* Main Container */
+  .audio-player-pro {
+    max-width: var(--player-width);
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    font-family: var(--font-ui);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    user-select: none;
+  }
+
+  /* Header Section */
+  .player-header {
+    margin-bottom: 1.5rem;
+  }
+  .track-meta {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent-color);
+    margin-bottom: 4px;
+  }
+  .track-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-main);
+  }
+
+  /* Progress Row */
+  .progress-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+  }
+  .time-label {
+    font-size: 0.75rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+    min-width: 40px;
+  }
+  .progress-track-wrapper {
+    flex-grow: 1;
+    display: flex;
+    gap: 4px;
+    height: 8px;
+    align-items: center;
+  }
+  .progress-segment {
+    height: 100%;
+    background: var(--border-color);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.1s;
+  }
+  .progress-segment:hover { 
+    transform: scaleY(1.5); 
+    background: rgba(0, 0, 0, 0.12);
+  }
+  .segment-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: var(--accent-color);
+    width: 0%;
+    pointer-events: none;
+  }
+
+  /* Bottom Controls Row */
+  .controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .left-controls, .right-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 120px;
+  }
+  .center-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* Buttons */
+  .icon-btn {
+    background: none;
+    border: none;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s, opacity 0.2s;
+  }
+  .icon-btn:hover:not(:disabled) { background: var(--bg-hover); }
+  .icon-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  
+  .play-pause-btn {
+    background: var(--text-main);
+    color: white;
+    width: 44px;
+    height: 44px;
+	padding-right: 4px;
+  }
+  .play-pause-btn:hover:not(:disabled) { background: #000; transform: scale(1.05); }
+
+  /* Volume Popover */
+  .volume-wrapper { position: relative; }
+  .volume-slider-popover {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 12px 8px;
+    border-radius: 20px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    display: none;
+    height: 100px;
+    z-index: 10;
+  }
+  .volume-wrapper:hover .volume-slider-popover,
+  .volume-slider-popover:hover { display: flex; }
+  
+  .vertical-slider {
+    writing-mode: bt-lr; /* Bottom to top */
+    appearance: slider-vertical;
+    width: 8px;
+    height: 100%;
+    cursor: pointer;
+  }
+
+  /* Options Floating Box */
+  .options-wrapper { position: relative; }
+  .options-menu {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    right: 0;
+    background: white;
+    border: 1px solid var(--border-color);
+    width: 180px;
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    display: none;
+    flex-direction: column;
+    padding: 6px;
+    z-index: 20;
+    overflow: hidden;
+  }
+  .options-menu.active { display: flex; }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-main);
+  }
+  .menu-item:hover { background: var(--bg-hover); }
+
+  /* Submenu Overlay */
+  .speed-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: white;
+    display: none;
+    flex-direction: column;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  .speed-overlay.active { display: flex; }
+
+  .speed-slider-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .back-btn {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+
+  input[type="range"] {
+    accent-color: var(--accent-color);
+  }
+
+  .hidden { display: none; }
+</style>
+
+
+<script>
+  class AudioEngine {
+	private playlist: { title: string, url: string, duration?: number }[];
+	private currentIdx: number;
+	private audio: HTMLAudioElement;
+	private isReady: boolean;
+
+
+    constructor(playlist: { title: string, url: string, duration?: number }[]) {
+      this.playlist = playlist;
+      this.currentIdx = 0;
+      this.audio = document.getElementById('core-audio') as HTMLAudioElement;
+      this.isReady = false;
+
+      this.init();
+    }
+
+    async init() {
+      await this.loadMetadata();
+      this.renderProgressSegments();
+      this.bindEvents();
+      this.loadTrack(0, false);
+      this.updateUIState();
+    }
+
+    async loadMetadata() {
+      const loaders = this.playlist.map(track => {
+        return new Promise<void>(res => {
+          const tmp = new Audio();
+          tmp.addEventListener('loadedmetadata', () => {
+            track.duration = tmp.duration;
+            res();
+          });
+          tmp.src = track.url;
+        });
+      });
+      await Promise.all(loaders);
+      this.isReady = true;
+    }
+
+    renderProgressSegments() {
+      const container = document.getElementById('ui-progress-container')!;
+      container.innerHTML = '';
+      const totalDuration = this.playlist.reduce((s, t) => s + t.duration!, 0);
+
+      this.playlist.forEach((track, i) => {
+        const seg = document.createElement('div');
+        seg.className = 'progress-segment';
+        seg.style.flex = (track.duration! + '');
+        seg.innerHTML = `<div class="segment-fill" id="fill-${i}"></div>`;
+        
+        // --- Enhanced Seeking Logic ---
+        seg.onclick = (e) => {
+          const rect = seg.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const percentage = clickX / rect.width;
+          const seekTime = percentage * track.duration!;
+          
+          if (this.currentIdx === i) {
+            // Seek within current track
+            this.audio.currentTime = seekTime;
+          } else {
+            // Jump to different track and seek
+            this.loadTrack(i, true, seekTime);
+          }
+        };
+        
+        container.appendChild(seg);
+      });
+    }
+
+    loadTrack(idx: number, autoPlay = true, startTime = 0) {
+      this.currentIdx = idx;
+      const track = this.playlist[idx];
+      this.audio.src = track.url;
+      
+      document.getElementById('ui-track-title')!.innerText = track.title;
+      document.getElementById('ui-track-meta')!.innerText = `Part ${idx + 1} of ${this.playlist.length}`;
+      
+      this.updateFills();
+      this.updateTimeDisplay();
+      this.updateNavButtons();
+
+      // Ensure start time is set once metadata loads for the new source
+      if (startTime > 0) {
+        this.audio.addEventListener('loadedmetadata', () => {
+          this.audio.currentTime = startTime;
+        }, { once: true });
+      }
+
+      if (autoPlay) this.audio.play();
+    }
+
+    updateFills() {
+      this.playlist.forEach((_, i) => {
+        const fill = document.getElementById(`fill-${i}`) as HTMLElement;
+        if (i < this.currentIdx) fill.style.width = '100%';
+        else if (i > this.currentIdx) fill.style.width = '0%';
+      });
+    }
+
+    updateTimeDisplay() {
+      const cur = this.audio.currentTime || 0;
+      const dur = this.audio.duration || 0;
+      document.getElementById('ui-current-time')!.innerText = this.formatTime(cur);
+      document.getElementById('ui-remaining-time')!.innerText = `-${this.formatTime(dur - cur)}`;
+    }
+
+    formatTime(s: number) {
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60);
+      return `${m}:${sec.toString().padStart(2, '0')}`;
+    }
+
+    updateNavButtons() {
+      (document.getElementById('prev-btn') as HTMLButtonElement)!.disabled = this.currentIdx === 0;
+      (document.getElementById('next-btn') as HTMLButtonElement)!.disabled = this.currentIdx === this.playlist.length - 1;
+      (document.getElementById('play-pause-btn') as HTMLButtonElement)!.disabled = !this.isReady;
+    }
+
+    bindEvents() {
+      const playPauseBtn = document.getElementById('play-pause-btn');
+      
+      this.audio.ontimeupdate = () => {
+        const pct = (this.audio.currentTime / this.audio.duration) * 100;
+        const fill = document.getElementById(`fill-${this.currentIdx}`) as HTMLElement;
+        if (fill) fill.style.width = `${pct}%`;
+        this.updateTimeDisplay();
+      };
+
+      this.audio.onplay = () => {
+        document.getElementById('icon-play')!.classList.add('hidden');
+        document.getElementById('icon-pause')!.classList.remove('hidden');
+      };
+
+      this.audio.onpause = () => {
+        document.getElementById('icon-play')!.classList.remove('hidden');
+        document.getElementById('icon-pause')!.classList.add('hidden');
+      };
+
+      this.audio.onended = () => {
+        if (this.currentIdx < this.playlist.length - 1) {
+          this.loadTrack(this.currentIdx + 1, true);
+        }
+      };
+
+      (playPauseBtn as HTMLButtonElement)!.onclick = () => {
+        this.audio.paused ? this.audio.play() : this.audio.pause();
+      };
+
+      (document.getElementById('next-btn') as HTMLButtonElement)!.onclick = () => this.loadTrack(this.currentIdx + 1, true);
+      (document.getElementById('prev-btn') as HTMLButtonElement)!.onclick = () => this.loadTrack(this.currentIdx - 1, true);
+
+      const volSlider = document.getElementById('volume-slider') as HTMLInputElement;
+      volSlider.oninput = (e) => {
+        this.audio.volume = +(e.target as HTMLInputElement).value;
+      };
+
+      const speedSlider = document.getElementById('speed-slider') as HTMLInputElement;
+      speedSlider.oninput = (e) => {
+        const val = +(e.target as HTMLInputElement).value;
+        this.audio.playbackRate = val;
+        document.getElementById('ui-current-speed')!.innerText = `${val}x`;
+      };
+    }
+
+    updateUIState() {}
+  }
+
+  // --- UI Interactivity ---
+  const optionsToggle = document.getElementById('options-toggle') as HTMLButtonElement;
+  const optionsMenu = document.getElementById('options-menu') as HTMLElement;
+  const speedTrigger = document.getElementById('speed-menu-trigger') as HTMLButtonElement;
+  const speedOverlay = document.getElementById('speed-overlay') as HTMLElement;
+  const speedBack = document.getElementById('speed-back') as HTMLButtonElement;
+
+  optionsToggle.onclick = (e) => {
+    e.stopPropagation();
+    optionsMenu.classList.toggle('active');
+  };
+
+  (speedTrigger as HTMLButtonElement)!.onclick = (e) => {
+    e.stopPropagation();
+    speedOverlay.classList.add('active');
+  };
+
+  speedBack.onclick = (e) => {
+    e.stopPropagation();
+    speedOverlay.classList.remove('active');
+  };
+
+  window.onclick = () => {
+    optionsMenu.classList.remove('active');
+    speedOverlay.classList.remove('active');
+  };
+
+  // --- Initialization ---
+  const myTracks = [
+    { title: "Introduction & Context", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
+    { title: "Technical Deep Dive", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" },
+    { title: "Future Outlook", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" }
+  ];
+
+  new AudioEngine(myTracks);
+</script>

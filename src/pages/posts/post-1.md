@@ -18,3 +18,77 @@ anotehr text
 <div class="breakout">
 test
 </div>
+
+<aside class="marginalia">
+    <strong>Published:</strong> Oct 24, 2023<br>
+    <strong>Reading Time:</strong> 5 mins
+</aside>
+
+<div class="single-toggle">
+    <details>
+    <summary>View Technical Appendix</summary>
+    <div class="toggle-content">
+        <p>The layout uses <code>grid-template-columns</code> with named areas. This specific implementation ensures that elements with no specified grid-column default to <code>main-start</code>, maintaining the central reading column automatically.</p>
+    </div>
+    </details>
+</div>
+
+<div class="full-bleed">
+    <p style="font-family: var(--font-ui); color: var(--text-light);">[ Full Bleed Visual Element Placeholder ]</p>
+</div>
+
+<div class="collapsible">
+  <details>
+    <summary>View Technical Appendix</summary>
+    
+      
+        This component uses the native HTML <code>&lt;details&gt;</code> and 
+        <code>&lt;summary&gt;</code> elements. It is fully accessible, 
+        keyboard-navigable, and requires zero JavaScript to function.
+      
+  </details>
+</div>
+
+<p>Technical blogs often need clear labels for visual data.</p>
+  <figure>
+    <div class="image-placeholder">Chart/Graphic Placeholder</div>
+    <figcaption>
+      <strong>Figure 1.</strong> Analysis of user engagement across different layout types. 
+      Serif typography consistently scored higher for long-form retention.
+    </figcaption>
+  </figure>
+
+  <h3>2. Clean Data Tables</h3>
+  <p>Use a "Booktabs" style for tables: heavy lines for headers, light for rows.</p>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Baseline</th>
+          <th>Optimized</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Reading Speed</td>
+          <td>250 wpm</td>
+          <td>285 wpm</td>
+        </tr>
+        <tr>
+          <td>Eye Strain</td>
+          <td>High</td>
+          <td>Low</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>3. Footnotes</h3>
+  <p>For academic citations or side-comments that don't fit in marginalia<a href="#fn1" class="footnote-ref">1</a>.</p>
+
+  <section class="footnotes">
+    <ol>
+      <li id="fn1">This is a footnote. It stays at the bottom of the page to keep the main argument uncluttered.</li>
+    </ol>
+  </section>
