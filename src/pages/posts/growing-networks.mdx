@@ -1,0 +1,304 @@
+---
+title: 'Growing Neural Networks: Dynamic Evolution through Gradient Descent'
+pubDate: 2026-04-02
+layout: ../../layouts/Article.astro
+description: 'Analysis of the paper: Growing Neural Networks: Dynamic Evolution through Gradient Descent'
+author: 'Andrea Alfonsi'
+tags: ["papers"]
+---
+
+
+# Growing Neural Networks: Dynamic Evolution through Gradient Descent
+
+## 1. Introduction: The AI Scaling Crisis vs. Biological Elegance
+
+Modern artificial intelligence is addicted to scale, brute-forcing cognition with trillions of static parameters while burning through gigawatts of power. Nature, conversely, builds intelligence organically—starting small, adapting its very architecture to the task at hand, and running on less power than a dim lightbulb. 
+
+### The Brute-Force Crisis
+
+To understand the necessity of dynamically growing networks, we first need to look at the unsustainable trajectory of modern Machine Learning. Today's paradigm dictates that to solve harder problems, we must initialize vastly larger Large Language Models (LLMs). We build the scaffolding for a skyscraper before we even know if we are constructing a toolshed or a high-rise. 
+
+This "Start Big, Prune Later" philosophy has a severe physical cost. As established by Strubell et al. (2019) in their landmark paper on AI's environmental footprint, training a single large-scale NLP model with architecture search can emit over 626,000 pounds of CO₂—roughly equivalent to the lifetime emissions of five cars, including their manufacturing. Since then, the compute required to train state-of-the-art models has historically doubled every 3.4 months, leading us to massive data centers that demand dedicated nuclear reactors to sustain their power grids. 
+
+We are treating intelligence as a compression problem bounded only by static memory constraints. But what if the architecture itself could learn?
+
+### The Biological Antidote
+
+Let’s look at the ultimate counter-example: the biological brain. 
+
+From the microscopic nematode *C. elegans* (which operates perfectly with exactly 302 neurons) to the human brain (packing roughly 86 billion neurons), biological neural networks do not begin their lives at maximum capacity. Instead, they rely on a process of structural evolution. Through neurogenesis and synaptic pruning, the brain adds and removes connections dynamically based on environmental stimuli and learning requirements. 
+
+Most remarkably, the human brain achieves unparalleled generalization and reasoning while operating on a continuous power budget of approximately **20 watts**.
+
+> **The 'What If?' Scenario**
+> Imagine trying to teach a toddler calculus. You wouldn't give them a university-level textbook and ask them to read it a million times (which is effectively how we train dense, static neural networks). You would start with basic arithmetic, allowing their conceptual framework—and literally, their neural pathways—to grow in complexity only as the problems become more difficult.
+
+
+<div class="breakout">
+**[WIDGET PROPOSAL: Infographic Animation - The Wattage of Intelligence]**
+*   **What the User Sees:** A side-by-side, looping 2D animation comparing natural and artificial scaling. 
+*   **Left Side (Biology):** A sleek, stylized human brain glowing with a soft blue pulse. Below it, a digital read-out remains locked at a highly efficient "20 Watts."
+*   **Right Side (Artificial):** A traditional, static Neural Network grid. As the animation progresses, the grid inflates like a balloon to accommodate more data. The nodes turn from yellow to a warning red, and a power-consumption dial underneath spins wildly out of control, ticking up into the "MegaWatts" range. 
+*   **The Intuition:** This immediate visual juxtaposition grounds the reader in the physical reality of abstract algorithmic choices. Massive static networks are computationally wasteful; biological growth is elegant and resource-aware.
+</div>
+
+
+### The Thesis: Differentiable Growth
+
+This brings us to the core breakthrough presented by Radhakrishnan, Lindner, et al. in their 2025 paper, *Growing Neural Networks: Dynamic Evolution through Gradient Descent*. 
+
+Instead of relying on computational guesswork or massive post-training pruning protocols, the researchers asked a radical question: **Can we make the size of a neural network a differentiable parameter?** 
+
+By allowing artificial neural networks to start small and organically "grow" their architecture via the exact same gradient descent mathematics used to update their weights, we can slash computational waste, avoid getting trapped in poor local minima early in training, and step closer to the elegant efficiency of biological systems. 
+
+***
+
+## 2. The Problem: The Limits of "Start Big, Prune Later"
+
+Before we can appreciate the elegance of a mathematically growing network, we have to look at how the machine learning industry currently solves the "sizing" problem. How do engineers know how many layers or neurons an AI needs to recognize a cat, translate French, or fold a protein? 
+
+Historically, the answer has been remarkably unscientific: **we guess.** 
+
+We typically initialize a static, vastly over-parameterized grid of neurons and hope it's large enough to capture the complexity of the data. To fix the inefficiencies of this "guessing game," the field has developed three main workarounds. Unfortunately, each comes with a fatal flaw.
+
+### 1. Static Architectures & The Guessing Game
+Imagine buying a 50-bedroom mansion just in case you eventually decide to have 48 children. That is the philosophy behind static, over-parameterized networks. 
+
+Because we cannot easily alter a network's size mid-training, we initialize it to be massive. While this guarantees the network has enough capacity to solve the problem, the vast majority of those parameters end up doing absolutely nothing. Frankle and Carbin's famous *Lottery Ticket Hypothesis* (2018) proved this: within every massive, untrained network is a tiny, sparse sub-network (the "winning ticket") that does all the heavy lifting. The rest of the network is essentially dead weight, costing us precious VRAM and compute during every single epoch of training.
+
+### 2. Post-Training Pruning: The Sculptor's Dilemma
+If most of a large network is useless, why not just delete the dead weight? This is the premise of **Post-Training Pruning**. We train the massive model, identify the connections with weights close to zero, and sever them. 
+
+> **The Intuition:** Pruning is like sculpting an elephant. You buy a 100-ton block of marble, spend massive amounts of energy hauling it up a mountain (the training phase), and then chisel away 90 tons of excess stone. 
+
+While the *final* model is lean and efficient for inference, the initial training phase is still an environmental disaster. You are forced to pay the maximum computational cost upfront to find out which parts of the network you actually needed. 
+
+### 3. Neural Architecture Search (NAS): The Brute-Force Blueprint
+To avoid human guesswork, researchers introduced Neural Architecture Search (NAS). Instead of manually designing a network, NAS uses reinforcement learning to search through a vast "architecture space" to find the optimal arrangement of nodes and layers.
+
+The problem here is combinatorial explosion. If a network has $L$ layers and a maximum of $N$ nodes per layer, the number of possible discrete architectures scales exponentially: $\mathcal{O}(N^L)$. To evaluate each architecture, the NAS algorithm often has to train it from scratch to see how well it performs. NAS automates the design, but at a catastrophic compute cost.
+
+### 4. Evolutionary Algorithms: The Gradient-Free Trap
+If starting big and shrinking is inefficient, why hasn't the industry already embraced networks that start small and grow? 
+
+Actually, we have tried. Neuroevolution algorithms, such as NEAT (NeuroEvolution of Augmenting Topologies, 2002), successfully grow neural networks from simple starting points by mimicking biological mutation and crossover. 
+
+So why aren't we using NEAT to train Large Language Models? **Because it abandons the gradient.**
+
+Evolutionary algorithms treat the network as a black box, randomly mutating connections and seeing what survives. But modern deep learning is powered by **Gradient Descent**—a directed, mathematically rigorous map of the loss landscape. Gradients tell every single weight exactly which direction to move to minimize error. Abandoning the gradient for random mutation is like throwing away a GPS system and navigating a cross-country road trip by randomly rolling a pair of dice at every intersection.
+
+<div class="breakout">
+**[WIDGET PROPOSAL: Interactive Search-Space Explorer]**
+*   **What the User Sees:** A 3D landscape representing the cost and performance of different AI optimization strategies. 
+*   **Interaction:** The user can select one of four strategies from a dropdown: *Static Oversizing*, *Pruning*, *NAS*, or *NEAT*.
+*   **The Animation:** 
+    *   *Pruning* drops a massive, heavy boulder onto the landscape that slowly shrinks into a diamond, leaving a deep, energy-wasting crater behind.
+    *   *NAS* spawns hundreds of tiny drones that frantically buzz around the entire landscape, consuming a massive collective fuel bar before one lands on the peak.
+    *   *NEAT* shows a small network blindly wandering around, taking frequent wrong turns before painfully inching upward.
+*   **The Intuition:** This visually reinforces why none of the historical methods hit the "Holy Grail" of AI design: a method that is both highly targeted (like gradients) and structurally efficient (like biology).
+</div>
+
+
+### The Missing Link
+To summarize the deadlock: Pruning wastes compute during training. NAS wastes compute searching for architectures. Evolution wastes time by ignoring gradients. 
+
+The Holy Grail of machine learning architecture is a network that **starts small, grows dynamically based on need, and uses gradient descent to mathematically direct that growth.** Until recently, this was considered mathematically impossible, because adding a neuron is a *discrete* change (you can't have half a neuron), and gradient descent strictly requires *continuous, differentiable* functions. 
+
+***
+
+## 3. The Solution: Enter Dynamic Evolution via Gradient Descent
+
+To solve the sizing crisis, we have to overcome a fundamental mathematical roadblock: **calculus hates sudden jumps.** 
+
+Standard gradient descent algorithms rely on smooth, continuous curves (differentiability) to figure out which direction to adjust parameters to reduce errors. You can smoothly change a weight from $0.5$ to $0.51$. But you cannot have $0.51$ of a neuron. Adding a neuron is a discrete topological change. 
+
+The elegance of Radhakrishnan, Lindner, et al. (2025) lies in their solution to this exact problem: they invented a mathematical "dimmer switch" for neural architecture.
+
+### The Intuition: From Light Switches to Dimmers
+
+> **The 'Aha!' Moment**
+> Imagine trying to light a room to the perfect level of brightness. If you only have standard on/off switches (discrete), you have to randomly flick switches until it looks right. But if you have dimmer switches (continuous), you can smoothly turn the dial up or down until the light hits the exact optimal level. 
+> 
+> Growing Neural Networks apply this exact logic. Instead of hard-coding a discrete number of neurons, the researchers introduced a continuous *size parameter*. As the network trains, gradient descent smoothly turns the "dimmer" up. Once the continuous parameter crosses a threshold, a new physical neuron "clicks" into existence. 
+
+Instead of treating the architecture as a rigid container that holds the learnable weights, the **size of the network itself becomes a learnable parameter**, optimized exactly like the weights and biases.
+
+### The Formalization: Coupling Size to the Loss Landscape
+
+In standard neural networks, the optimizer minimizes a loss function $\mathcal{L}$ by updating the weights and biases, which we collectively call $\theta$. 
+
+To allow the network to grow, the researchers introduced a new, continuous parameter: $\alpha$, representing the *network size*. 
+
+To optimize both performance and efficiency simultaneously, the standard loss function is augmented into a combined objective function:
+
+$$ 
+\mathcal{L}(\theta, \alpha) = \mathcal{L}_{base}(f(x; \theta, \alpha), y) + \lambda \mathcal{L}_{size}(\alpha) 
+$$
+
+Let's break down exactly what this equation is doing:
+*   **$\mathcal{L}_{base}(f(x; \theta, \alpha), y)$:** This is your standard task loss (e.g., Mean Squared Error or Cross-Entropy). It measures how accurately the network's predictions $f(x)$ match the true targets $y$.
+*   **$\mathcal{L}_{size}(\alpha)$:** This is the structural penalty. It is a mathematical cost associated with the network getting larger.
+*   **$\lambda$ (Lambda):** This is the **size-loss coupling constant**. It acts as the ultimate referee between accuracy and efficiency.
+
+If $\lambda$ is $0$, the network doesn't care about its size and will grow endlessly to memorize the data. If $\lambda$ is massive, the network will refuse to grow, prioritizing being small over being accurate. 
+
+But when $\lambda$ is tuned correctly, a beautiful tug-of-war emerges. If the network is struggling to solve a complex feature in the data, the gradient of the task loss ($\mathcal{L}_{base}$) will overpower the size penalty, smoothly pushing $\alpha$ upward to "grow" a new neuron. Once the task is solved, the gradient flattens out, and the size penalty prevents any further unnecessary growth.
+
+<div class="breakout">
+**[WIDGET PROPOSAL: The Gradient Tug-of-War (Interactive Balance Scale)]**
+*   **What the User Sees:** A digital balance scale. On the left pan sits "Task Error" (a pile of red blocks). On the right pan sits "Network Size" (a single glowing neuron). Below the scale is a slider labeled **$\lambda$ (Coupling Constant)**.
+*   **Interaction:** The user drags the $\lambda$ slider. 
+    *   If they drag it to the left (low $\lambda$), the scale tips heavily towards minimizing Task Error. Suddenly, a flurry of new neurons visually "pops" onto the right pan, growing the network massively to crush the error.
+    *   If they drag it to the right (high $\lambda$), the scale violently tips the other way. The network rapidly shrinks back down to a single neuron, but the Task Error blocks pile up high.
+*   **The Intuition:** This interaction allows the user to literally *feel* the mathematical tension in the equation. They understand intuitively that gradient descent is just trying to balance this scale dynamically at every step of training.
+</div>
+
+### The Big Win: Seamless Integration
+
+Because $\alpha$ is just another continuous variable participating in the loss gradient, you do not need to rewrite your entire machine learning stack to use it. You don't need highly specialized evolutionary algorithms or entirely new distributed computing frameworks. 
+
+This formulation integrates seamlessly with modern deep learning frameworks like PyTorch or JAX. Standard algorithms like Adam or SGD look at $\alpha$ and treat it just like any other weight, carving a path through the loss landscape that simultaneously discovers the optimal parameters *and* the optimal architecture.
+
+***
+
+## 4. Deep Dive: The Mathematical Mechanics of Growth
+
+We have established the theory: we need a continuous "dimmer switch." But how do you actually code a dimmer switch for a discrete object like a neuron? Matrices must have integer dimensions—you can't tell a computer to multiply a $2.5 \times 2.5$ matrix.
+
+The researchers proposed two brilliant workarounds to mathematically decouple the *continuous size* (which the optimizer sees) from the *discrete physical size* (which the hardware computes).
+
+### Algorithm A: The Auxiliary-Weight Method
+
+This algorithm is the most direct translation of biological growth: it dynamically allocates more memory to grow the tensor dimensions as training progresses.
+
+> **The Intuition: The Master Blueprint**
+> Imagine an architect building a modular house. Instead of drawing every room individually, they draw a single master variable on the blueprint: $N$. If the architect updates $N$ from $2$ to $3.4$, the construction crew knows to build exactly $3$ rooms, but the architect's math still smoothly accounts for that fractional $0.4$ in their budget. 
+
+**The Formalization:**
+To create this continuous size parameter, the researchers prepend a "Layer 0" to the network. 
+
+Layer 0 consists of a single input node permanently fixed at a value of $1$. This node connects to a single output using an identity activation function. The weight of this connection is an auxiliary parameter, $w^0_{11}$. 
+
+Because the input is $1$ and the activation is linear, the output of Layer 0 is exactly $w^0_{11}$. The network then defines its number of active hidden neurons $N$ based on this weight:
+$$ 
+N = w^0_{11} 
+$$
+
+When the optimizer computes gradients, $w^0_{11}$ updates smoothly as a continuous real number (e.g., $4.7$). However, for the forward pass, the network takes the `floor()` of $w^0_{11}$ to instantiate the discrete physical neurons (e.g., $4$ neurons). 
+
+*Advantage:* Hyper-efficient compute early in training, as it only calculates math for currently active neurons. 
+
+### Algorithm B: The Controller-Mask Method
+
+While the Auxiliary-Weight method is conceptually elegant, GPUs and TPUs *hate* dynamically changing matrix sizes. They are designed for massive, static blocks of memory. Algorithm B solves this by using a fixed-size architecture, but mathematically enforcing growth through a differentiable "mask."
+
+> **The Intuition: The Studio Soundboard**
+> Imagine a mixing console in a recording studio. All 100 channels physically exist. However, a master fader (the controller) smoothly modulates their volume. If the fader is low, channels 10 through 100 are muted. As the fader is pushed up, channel 10 smoothly fades in, then channel 11, and so on.
+
+**The Formalization:**
+Instead of changing the tensor size, we initialize a standard large Multi-Layer Perceptron (MLP). However, we introduce an independent "Size Controller."
+
+This controller outputs a continuous masking value, $C_1$. To ensure gradient flow remains smooth even as the mask "turns on" discrete neurons, the researchers pass $C_1$ through a smooth, periodic transition function $\psi(x)$:
+
+$$ 
+\psi(x) = \sin^2\left(\frac{\pi}{2}x\right) \quad \text{for } -1 \leq x \leq 0 
+$$
+
+The effective number of active neurons, $\tilde{N}$, is calculated by modulating the maximum network capacity $N$ with this wave:
+
+$$ 
+\tilde{N} = N \sin^2\left(\frac{\pi}{2} C_1\right)
+$$
+
+During the forward pass, this mask is multiplied against the layer's activations. Neurons beyond the capacity $\tilde{N}$ are multiplied by $0$. The transition neuron—the one currently "growing"—is multiplied by a fraction, smoothly phasing it into existence. 
+
+
+<div class="breakout">
+**[WIDGET PROPOSAL: The Masking Soundboard]**
+*   **What the User Sees:** A 3D array of glass lightbulbs representing a hidden layer of 10 neurons. Below them is a continuous slider labeled "$C_1$ (Controller Mask)". Above the bulbs is a graph showing the smooth sine wave $\psi(x)$.
+*   **Interaction:** The user drags the $C_1$ slider from left to right.
+*   **The Animation:** As the user drags, the mathematical sine wave slowly shifts across the graph. When the curve intersects a new integer, the corresponding glass lightbulb begins to smoothly glow from 0% to 100% brightness. 
+*   **The Intuition:** The user visually connects the continuous math (the sliding sine wave) with the discrete reality (the bulbs lighting up one by one). 
+</div>
+
+***
+
+## 5. The Hidden Advantage: Conquering the Loss Landscape
+
+It is one thing to save compute, but the paper revealed a far more profound phenomenon: **growing networks consistently outperform static networks of the exact same final size.** The compute savings are a byproduct; the true advantage lies in the geometry of learning.
+
+### The Intuition: Foggy Mountains and Smooth Bowls
+
+> **The 'Aha!' Moment**
+> Imagine you are blindfolded in a massive, jagged mountain range, trying to find the absolute lowest valley (the global minimum). If you start in a trillion-parameter network, you are in a trillion-dimensional mountain range full of deep craters and false valleys. It is incredibly easy to step into a crater (a local minimum) and get stuck.
+> 
+> A tiny network, however, is not a mountain range. It is a simple, smooth salad bowl. If you are dropped in the bowl, you roll straight to the bottom. 
+> 
+> Growing the network is the equivalent of starting in the smooth bowl, rolling to the bottom, and *then* progressively morphing the bowl into the jagged mountain range. By the time the landscape becomes highly complex, you are already standing next to the deepest valley, bypassing the traps completely.
+
+### The Formalization: Dimensional Projection and the Hessian
+
+When a network has a massive static parameter count $N$, its loss function $\mathcal{L}(\theta)$ exists in a highly non-convex space $\mathbb{R}^N$. 
+
+A growing network begins optimization in a severely restricted subspace $\mathbb{R}^d$ ($d \ll N$). Because capacity is restricted, gradient descent quickly finds a strong basin of attraction, yielding optimal parameters $\theta^*_{d}$.
+
+When the network adds a new neuron, it projects its state into a higher-dimensional space: $\mathbb{R}^{d+1}$. Crucially, because new parameters are initialized near zero (or masked smoothly), the output of the network does not violently change. This is a **function-preserving projection**:
+$$ 
+f(x; \theta^*_{d}) \approx f(x; \theta_{d+1}^{initial}) 
+$$
+
+By projecting optimized weights into a higher dimension, $\theta^*_{d}$ serves as a highly privileged starting point in $\mathbb{R}^{d+1}$. In the context of the Hessian matrix (describing local curvature), adding a dimension often introduces a negative eigenvalue. This turns what was a "trap" (a local minimum in $\mathbb{R}^d$) into a "saddle point" in $\mathbb{R}^{d+1}$, providing a strict mathematical escape route pointing further downhill.
+
+<div class="breakout">
+**[WIDGET PROPOSAL: The Dimensionality Elevator]**
+*   **What the User Sees:** A 3D interactive surface plot with buttons for "Static Initialization" and "Dynamic Growth."
+*   **Interaction:** 
+    *   *Static:* Spawns a highly complex, jagged 3D terrain. A glowing ball drops in randomly and gets stuck in a shallow divot.
+    *   *Dynamic:* The terrain starts as a smooth 2D parabolic U-shape. The ball drops to the exact bottom. Then, the terrain smoothly morphs, adding a 3rd dimension. Because the ball is already at the optimal coordinates, it simply drops perfectly into the global minimum.
+*   **The Intuition:** Visualizes function-preserving projection, proving why starting small is a cheat code for finding better minima in high-dimensional spaces.
+</div>
+***
+
+## 6. Conclusion: Re-thinking Artificial Intelligence
+
+We have spent the last decade operating under a brute-force philosophy: build the largest possible static matrix and let the GPUs melt until intelligence emerges. But as our models scale to trillions of parameters, the limits of this philosophy are glaring. 
+
+The research by Radhakrishnan, Lindner, et al. (2025) offers a profound paradigm shift. By introducing a continuous size parameter ($\alpha$) and coupling it to the loss landscape via $\lambda \mathcal{L}_{size}$, they have achieved the convergence of biological growth with the rigorous mathematics of gradient descent.
+
+> **The Final Intuition: The Ship in a Bottle**
+> Think of a massive, static neural network like a fully assembled ship trapped inside a glass bottle. We spend enormous energy trying to figure out how to painfully pull useless pieces back out through the narrow neck (pruning). 
+> 
+> A growing neural network is like building the ship *inside* the bottle, piece by piece. Because every plank (neuron) is only added when it serves the structural integrity of the whole, there is no waste. 
+
+This proves a critical new rule for AI engineering: the *trajectory* of learning is just as critical as the final architecture. A network that organically grows to 100 parameters will consistently navigate the loss landscape better than a network initialized at 100 parameters from epoch zero. 
+
+The call to action is clear. We must stop throwing blind compute at static architectures. By allowing our algorithms to evolve dynamically—starting small, learning the fundamentals, and expanding only when the math demands it—we can build artificial intelligence that is faster, cheaper, and fundamentally more elegant. 
+
+**Key Takeaway (TL;DR):** Differentiable network growth proves that how an AI reaches its final size dictates its ultimate performance, allowing us to simultaneously slash computational waste and discover superior loss minima.
+
+***
+
+## 7. See Also
+
+If you enjoyed this deep-dive into dynamic architectures, explore our other pieces on the structural evolution of machine learning:
+
+*   [**Liquid Neural Networks: Time-Continuous Architecture for Edge AI**](#) — *How researchers are building adaptable, brain-inspired networks that change their underlying equations on the fly.*
+*[**The Mathematics of Pruning: Compressing LLMs Post-Training**](#) — *A deep dive into the calculus of identifying and severing "dead weight" in trillion-parameter models.*
+*[**Neural Architecture Search (NAS): A Comprehensive Guide**](#) — *Understanding the reinforcement learning techniques used to automate the design of neural structures.*
+*   [**Physics-Informed Neural Networks (PINNs): Integrating Physical Laws into Machine Learning**](#) — *How constraining the loss landscape with the laws of thermodynamics leads to radically faster convergence.*
+
+***
+
+### References & Further Reading
+
+1.  **Core Paper:** Radhakrishnan, A., Lindner, J. F., et al. (2025). *"Growing Neural Networks: Dynamic Evolution through Gradient Descent."* arXiv:2501.18012v2. [Link](https://arxiv.org/pdf/2501.18012v2)
+2.  **AI Carbon Footprint:** Strubell, E., Ganesh, A., & McCallum, A. (2019). *"Energy and Policy Considerations for Deep Learning in NLP."* ACL. [Link](https://arxiv.org/abs/1906.02243)
+3.  **Compute Scaling:** Amodei, D., Hernandez, D., et al. (2018). *"AI and Compute."* OpenAI Blog. [Link](https://openai.com/research/ai-and-compute)
+4.  **The Lottery Ticket Hypothesis:** Frankle, J., & Carbin, M. (2018). *"The Lottery Ticket Hypothesis: Finding Sparse, Trainable Neural Networks."* ICLR. [Link](https://arxiv.org/abs/1803.03635)
+5.  **Neural Architecture Search (NAS):** Zoph, B., & Le, Q. V. (2017). *"Neural Architecture Search with Reinforcement Learning."* ICLR.[Link](https://arxiv.org/abs/1611.01578)
+6.  **NEAT (Evolutionary Growth):** Stanley, K. O., & Miikkulainen, R. (2002). *"Evolving Neural Networks through Augmenting Topologies."* Evolutionary Computation. [Link](http://nn.cs.utexas.edu/downloads/papers/stanley.ec02.pdf)
+7.  **Optimizers:** Ruder, S. (2016). *"An overview of gradient descent optimization algorithms."* [Link](https://arxiv.org/abs/1609.04747)
+8.  **Hardware Bottlenecks:** Hooker, S. (2020). *"The Hardware Lottery."* Communications of the ACM. [Link](https://arxiv.org/abs/2009.06489)
+9.  **Loss Landscapes:** Li, H., Xu, Z., Taylor, G., Studer, C., & Goldstein, T. (2018). *"Visualizing the Loss Landscape of Neural Nets."* NeurIPS. [Link](https://arxiv.org/abs/1712.09913)
+10. **Function-Preserving Morphism:** Chen, T., Goodfellow, I., & Shlens, J. (2015). *"Net2Net: Accelerating Learning via Knowledge Transfer."* ICLR. [Link](https://arxiv.org/abs/1511.05641)
+11. **Biological Analogies in AI:** Hassabis, D., Kumaran, D., Summerfield, C., & Botvinick, M. (2017). *"Neuroscience-Inspired Artificial Intelligence."* Neuron. [Link](https://doi.org/10.1016/j.neuron.2017.06.011)

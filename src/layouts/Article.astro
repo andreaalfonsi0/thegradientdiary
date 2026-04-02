@@ -1,5 +1,4 @@
 ---
-import AudioPlayer from "../components/AudioPlayer.astro"
 import NavBar from "../components/NavBar.astro";
 
 const { frontmatter, headings } = Astro.props;
@@ -12,6 +11,12 @@ const { frontmatter, headings } = Astro.props;
         <meta name="description" content={frontmatter.description}>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="icon" href="/favicon.ico">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css"
+            integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV"
+            crossorigin="anonymous"
+        />
         <title>The Gradient Diary{ frontmatter.title ? (` - ${frontmatter.title}`): ''}</title>
 	</head> 
 	<body>
@@ -20,16 +25,14 @@ const { frontmatter, headings } = Astro.props;
 			<aside class="index-column" >
 				<h3 class="sidebar-title">Table of Contents</h3>
 				<ul>
-					{ headings.map( (heading: { slug: string; text: string, depth: number }) => (
+					{ headings.filter((h: { depth: number, slug: string, text: string }) => h.depth < 3).map((heading: { slug: string, text: string }) => (
 						<li>
 							<a href={`#${heading.slug}`}>{heading.text}</a>
 						</li>
 					) ) }
 				</ul>
 			</aside>
-			<AudioPlayer ></AudioPlayer>
-			<!-- ARTICLE GOES HERE --> 
-			<slot/>
+            <slot/>
 		</article>
 	</body>
 </html>
@@ -57,6 +60,11 @@ const { frontmatter, headings } = Astro.props;
     --border: rgba(0, 0, 0, 0.1);
     --accent: #0366d6;
     --border: solid 1px rgba(0, 0, 0, 0.1);
+}
+
+html {
+    scroll-padding-top: 80px;
+    scroll-behavior: smooth;
 }
 
 /* Base resets */
@@ -96,6 +104,7 @@ body {
     height: fit-content;
     margin-top: 3rem;
     border-right: var(--border);
+    height: 1px;
 }
 
 .index-column ul {
@@ -110,7 +119,7 @@ body {
 }
 .index-column li a {
 	text-decoration: none;
-	
+	color: var(--text-light);
 }
 
 .marginalia {
