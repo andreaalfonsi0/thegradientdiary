@@ -9,6 +9,21 @@ image:
     alt: 'Il logo di Astro su uno sfondo scuro con un bagliore rosa.'
 tags: ["astro", "blogging", "imparare in pubblico"]
 ---
+
+import InteractiveChart from '../../components/posts/post-1/example.svelte';
+
+# Understanding Oscillation
+
+Markdown is great for writing, but sometimes you need a visual. 
+Check out this interactive simulation below:
+
+<div class="breakout">
+  <InteractiveChart client:visible initialGravity={90.8} />
+</div>
+
+As you can see in the simulation above, the period of a pendulum...
+
+
 # My first article
 test
 
@@ -20,7 +35,7 @@ test
 </div>
 
 <aside class="marginalia">
-    <strong>Published:</strong> Oct 24, 2023<br>
+    <strong>Published:</strong> Oct 24, 2023
     <strong>Reading Time:</strong> 5 mins
 </aside>
 
