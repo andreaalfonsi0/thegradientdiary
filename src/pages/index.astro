@@ -1,10 +1,525 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import getReadingTime from '../utils/readingTime';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+// This runs ONLY at build time
+const posts = await getCollection('blog');
+
+// Sort by date (Newest to Oldest) and take the top 5
+const latestArticles = posts
+  .sort((a: any, b: any) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 5);
 ---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Gradient Diary</title>
+    <link href="https://fonts.googleapis.com/css2?family=Charter:wght@400;700&family=Inter:wght@300;400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --medium-black: #242424;
+            --medium-gray: #6B6B6B;
+            --medium-bg: #FFFFFF;
+            --accent: #1A8917;
+            --hero-yellow: #FFC017;
+        }
 
-<Layout>
-	<a href="/posts/growing-networks">First article about growing networks</a>
-</Layout>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--medium-bg);
+            color: var(--medium-black);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Source Serif 4', Georgia, serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* Layout */
+        .scroll-container {
+            flex: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .max-width-wrapper {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero-header {
+            background-color: var(--hero-yellow);
+            background-image: 
+                radial-gradient(at 0% 0%, hsla(43,100%,70%,1) 0, transparent 50%), 
+                radial-gradient(at 50% 0%, hsla(40,100%,60%,1) 0, transparent 50%),
+                url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3%3Ffilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            background-blend-mode: overlay;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid black;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient-overlay {
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 33.33%;
+            height: 100%;
+            background: linear-gradient(to left, rgba(0,0,0,0.05), transparent);
+            pointer-events: none;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .logo-container {
+            margin-bottom: 4rem;
+        }
+
+        .logo-text {
+            font-size: 1.5rem;
+            font-bold: 700;
+            border-bottom: 2px solid black;
+            padding-bottom: 0.25rem;
+        }
+
+        .hero-title {
+            font-size: clamp(3.5rem, 8vw, 8rem);
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 2rem;
+            tracking-tighter: -0.05em;
+        }
+
+        .hero-title span {
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero-description {
+            font-size: clamp(1.25rem, 2vw, 1.875rem);
+            font-weight: 500;
+            max-width: 42rem;
+            line-height: 1.2;
+            margin-bottom: 3rem;
+            color: rgba(0,0,0,0.8);
+        }
+
+        .hero-actions {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 1.5rem;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: black;
+            color: white;
+            font-size: 1.25rem;
+            padding: 1.25rem 3rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn-primary:hover {
+            background-color: #27272a;
+            transform: scale(1.05);
+        }
+
+        .hero-bg-accent {
+            position: absolute;
+            bottom: 2.5rem;
+            right: 2.5rem;
+            font-size: 20vw;
+            font-family: serif;
+            opacity: 0.05;
+            user-select: none;
+            pointer-events: none;
+        }
+
+        /* Content Grid */
+        .main-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 4rem;
+            padding: 5rem 0;
+        }
+
+        @media (min-width: 1024px) {
+            .main-layout {
+                flex-direction: row;
+            }
+        }
+
+        .article-feed {
+            flex: 2;
+        }
+
+        .sidebar {
+            flex: 1;
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .sidebar {
+                display: block;
+            }
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 2.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--medium-gray);
+        }
+
+        /* Articles */
+        .article-card {
+            border-bottom: 1px solid #F2F2F2;
+            padding-bottom: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .article-card {
+                flex-direction: row;
+            }
+        }
+
+        .article-content {
+            flex: 1;
+        }
+
+        .article-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .author-avatar {
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 9999px;
+        }
+
+        .article-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .article-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .article-excerpt {
+            color: var(--medium-gray);
+            font-family: 'Source Serif 4', serif;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .article-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .tag {
+            background: #F2F2F2;
+            padding: 4px 10px;
+            border-radius: 99px;
+            color: var(--medium-gray);
+        }
+
+        .article-image-box {
+            width: 100%;
+            height: 8rem;
+            border-radius: 0.25rem;
+            overflow: hidden;
+            background-color: #f3f4f6;
+        }
+
+        @media (min-width: 768px) {
+            .article-image-box {
+                width: 12rem;
+                order: 1;
+            }
+            .article-content {
+                order: 0;
+            }
+        }
+
+        .gradient-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Sidebar Styles */
+        .sticky-sidebar {
+            position: sticky;
+            top: 3rem;
+        }
+
+        .sidebar-title {
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .tag-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tag-cloud .tag {
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            transition: background-color 0.2s;
+        }
+
+        .tag-cloud .tag:hover {
+            background-color: #e5e7eb;
+        }
+
+        .sidebar-footer {
+            border-top: 1px solid #f3f4f6;
+            padding-top: 2rem;
+        }
+
+        .footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.75rem;
+            color: var(--medium-gray);
+        }
+
+        .footer-links a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .footer-links a:hover {
+            color: black;
+        }
+
+        /* Mobile FAB */
+        .mobile-fab {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 50;
+        }
+
+        @media (min-width: 768px) {
+            .mobile-fab {
+                display: none;
+            }
+        }
+
+        .btn-fab {
+            background-color: black;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 9999px;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+        }
+
+        /* Scrollbar */
+        .scroll-container::-webkit-scrollbar {
+            width: 5px;
+        }
+        .scroll-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #e2e8f0;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Scrollable Container -->
+    <div class="scroll-container">
+        
+        <!-- Enhanced 100vh Hero Section -->
+        <header class="hero-header">
+            <div class="hero-gradient-overlay"></div>
+            
+            <div class="max-width-wrapper hero-content">
+                <div class="logo-container">
+                    <span class="logo-text serif">The Gradient Diary</span>
+                </div>
+
+                <h1 class="hero-title">
+                    Beyond the <br><span>Local Minima.</span>
+                </h1>
+
+                <p class="hero-description">
+                    Deep dives into neural architectures, the ethics of AGI, and the mathematical beauty of optimization. Written by the researchers shaping the next epoch.
+                </p>
+
+                <div class="hero-actions">
+                    <button class="btn-primary">
+                        Suggest an Article
+                    </button>
+					or scoll down to explore
+                </div>
+            </div>
+
+            <!-- Mathematical symbol background accent -->
+            <div class="hero-bg-accent">
+                ∇θ
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <div class="max-width-wrapper main-layout">
+            
+            <!-- Article Feed -->
+            <main class="article-feed">
+                
+                <div class="section-header">
+                    Latest articles
+                </div>
+
+				{
+					latestArticles.map((article: any) => (
+						<article class="article-card">
+							<div class="article-image-box">
+								<div class="gradient-placeholder" style="background: linear-gradient(to top right, #e0e7ff, #f3e8ff);">
+									<img src={article.data.image?.src || 'https://placehold.co/300x200?text=No+Image'} alt={article.data.image?.alt || 'No image'} style="width: 100%; height: 100%; object-fit: cover;" />
+								</div>
+							</div>
+							<div class="article-content">
+								<div class="article-meta">
+									{/* <div class="author-avatar" style="background-color: #e0e7ff;"></div>
+									<span style="font-weight: 500;">Alex Rivers</span>
+									<span style="color: #9ca3af;">in</span>
+									<span style="font-weight: 500;">Neural Architecture</span> */}
+								</div>
+								<a href={article.filePath.replace('src/pages/', '').replace('.mdx', '')} class="article-link">
+									<h2 class="article-title">{article.data.title}</h2>
+									{/* <p class="article-excerpt">Exploring the high-dimensional valleys of Stochastic Gradient Descent and why the geometry of our cost functions is smoother than we once believed...</p> */}
+								</a>
+								<div class="article-footer">
+									<div class="footer-left">
+										<span>{ article.data.pubDate.toLocaleDateString('en-US', {
+											month: 'short',
+											day: 'numeric'
+										}) }</span>
+										<span>·</span>
+										<span>{ getReadingTime(article.body) } min read</span>
+										<span class="tag" style="display: inline-block;">{article.data.tags?.[0] || ''}</span>
+									</div>
+									<!-- <button style="background: none; border: none; cursor: pointer; color: #6b6b6b;">
+										<svg width="25" height="25" viewBox="0 0 25 25" fill="none" stroke="currentColor"><path d="M18 7v11c0 .41-.34.75-.75.75H9.75L6 21V7c0-.41.34-.75.75-.75h10.5c.41 0 .75.34.75.75z"></path></svg>
+									</button> -->
+								</div>
+							</div>
+						</article>
+					))
+				}
+                
+
+            </main>
+
+            <!-- Sidebar -->
+            <!-- <aside class="sidebar">
+                <div class="sticky-sidebar">
+                    <h3 class="sidebar-title">Refine your feed</h3>
+                    <div class="tag-cloud">
+                        <a href="#" class="tag">GANs</a>
+                        <a href="#" class="tag">LLMOps</a>
+                        <a href="#" class="tag">Alignment</a>
+                        <a href="#" class="tag">Backprop</a>
+                        <a href="#" class="tag">Inference</a>
+                    </div>
+
+                    <div class="sidebar-footer">
+                        <div class="footer-links">
+                            <a href="#">Help</a>
+                            <a href="#">Status</a>
+                            <a href="#">Privacy</a>
+                            <a href="#">Terms</a>
+                            <a href="#">About</a>
+                        </div>
+                    </div>
+                </div>
+            </aside> -->
+        </div>
+    </div>
+
+    <!-- Floating Action for Mobile -->
+    <div class="mobile-fab">
+        <button class="btn-fab">
+            Start Reading
+        </button>
+    </div>
+
+</body>
+</html>
