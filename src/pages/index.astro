@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import getReadingTime from '../utils/readingTime';
+import newGithubIssueUrl from '../utils/newGithubIssueUrl';
 
 // This runs ONLY at build time
 const posts = await getCollection('blog');
@@ -424,9 +425,9 @@ const latestArticles = posts
                 </p>
 
                 <div class="hero-actions">
-                    <button class="btn-primary">
+                    <a class="btn-primary" href={newGithubIssueUrl({repoUrl: 'https://github.com/andreaalfonsi0/thegradientdiary', labels: ['article']})} target="_blank" rel="noopener noreferrer">
                         Suggest an Article
-                    </button>
+                    </a>
 					or scoll down to explore
                 </div>
             </div>
