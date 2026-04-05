@@ -1,0 +1,52 @@
+name: Article Editor Assistant
+on:
+  issues:
+    types: [opened, labeled]
+
+jobs:
+  summarize:
+    # Trigger logic: Runs only if the 'article' label is present.
+    # The second line is the collaborator check (commented out for now).
+    if: >
+      contains(github.event.issue.labels.*.name, 'article')
+    # && (github.event.issue.author_association == 'OWNER' || github.event.issue.author_association == 'COLLABORATOR')
+    
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Copilot CLI
+        run: npm install -g @github/copilot-cli
+
+      - name: Generate Editorial Summary
+        id: copilot
+        env:
+          GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          # Custom prompt tailored for article writing and editing
+          PROMPT="You are a professional editor. Analyze this article draft. Provide a 3-sentence summary, identify the target audience, and suggest two headline alternatives."
+          SUMMARY=$(github-copilot-cli explain "$ISSUE_BODY" --prompt "$PROMPT")
+          
+          # Clean up the output for GitHub Actions safety
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          echo "$SUMMARY" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Post Editor Notes
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const summary = `${{ steps.copilot.outputs.summary }}`;
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## ✍️ Editorial Review\n\n${summary}`
+            })
