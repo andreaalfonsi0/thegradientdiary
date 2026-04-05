@@ -16,6 +16,7 @@ const latestArticles = posts
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="A blog about topics i find interesting in the field of deep learning, neural networks and AGI.">
     <title>The Gradient Diary</title>
     <style>
         :root {
@@ -149,6 +150,7 @@ const latestArticles = posts
             cursor: pointer;
             transition: all 0.2s ease;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            text-decoration: none;
         }
 
         .btn-primary:hover {
@@ -386,6 +388,7 @@ const latestArticles = posts
             border: 1px solid rgba(255,255,255,0.2);
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             cursor: pointer;
+            text-decoration: none;
         }
 
         /* Scrollbar */
@@ -443,7 +446,7 @@ const latestArticles = posts
             <!-- Article Feed -->
             <main class="article-feed">
                 
-                <div class="section-header">
+                <div class="section-header" id="latest-articles">
                     Latest articles
                 </div>
 
@@ -516,9 +519,9 @@ const latestArticles = posts
 
     <!-- Floating Action for Mobile -->
     <div class="mobile-fab">
-        <button class="btn-fab">
+        <a class="btn-fab" href="#latest-articles">
             Start Reading
-        </button>
+        </a>
     </div>
 
 </body>
